@@ -22,8 +22,8 @@ package net.myitian.boat_maneuverability_enhancing;
  */
 
 import net.fabricmc.loader.api.FabricLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class SimpleConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger("BoatManeuverabilityEnhancing/SimpleConfig");
+    private static final Logger LOGGER = LogManager.getLogger("BoatManeuverabilityEnhancing/SimpleConfig");
     private final HashMap<String, String> config = new HashMap<>();
 
     private SimpleConfig(ConfigRequest request) {
@@ -48,7 +48,7 @@ public class SimpleConfig {
                 request.file.getParentFile().mkdirs();
                 Files.createFile(request.file.toPath());
                 // write default config data
-                PrintWriter writer = new PrintWriter(request.file, StandardCharsets.UTF_8);
+                PrintWriter writer = new PrintWriter(request.file, StandardCharsets.UTF_8.toString());
                 writer.write(request.getConfig());
                 writer.close();
                 try {
@@ -67,11 +67,11 @@ public class SimpleConfig {
                     }
                 } catch (Exception e) {
                     LOGGER.error(identifier + " failed to load!");
-                    LOGGER.trace(String.valueOf(e));
+                    LOGGER.trace(e);
                 }
             } catch (IOException e) {
                 LOGGER.error(identifier + " failed to generate!");
-                LOGGER.trace(String.valueOf(e));
+                LOGGER.trace(e);
             }
         }
     }
