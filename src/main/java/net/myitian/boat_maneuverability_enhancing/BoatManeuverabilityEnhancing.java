@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 public class BoatManeuverabilityEnhancing {
     public static final String MODID = "boat-maneuverability-enhancing";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-    public static final SimpleConfig CONFIG = SimpleConfig.of(MODID).provider(filename->
+    public static final SimpleConfig CONFIG = SimpleConfig.of(MODID).provider(filename ->
         """
         # Boat maneuverability enhancing factor: 0 (won't stop yawing) ~ 1 (stop yawing immediately)
         # 船只操控性增强参数：0（不会阻止水平旋转） ~ 1（立即阻止水平旋转）

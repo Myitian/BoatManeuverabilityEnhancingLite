@@ -22,8 +22,8 @@ package net.myitian.boat_maneuverability_enhancing;
  */
 
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,38 +35,28 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class SimpleConfig {
-
-    private static final Logger LOGGER = LogManager.getLogger("SimpleConfig");
+    private static final Logger LOGGER = LoggerFactory.getLogger("BoatManeuverabilityEnhancing/SimpleConfig");
     private final HashMap<String, String> config = new HashMap<>();
     private final ConfigRequest request;
-    private boolean broken = false;
 
     private SimpleConfig(ConfigRequest request) {
         this.request = request;
         String identifier = "Config '" + request.filename + "'";
-
         if (!request.file.exists()) {
             LOGGER.info(identifier + " is missing, generating default one...");
-
             try {
                 createConfig();
+                try {
+                    loadConfig();
+                } catch (Exception e) {
+                    LOGGER.error(identifier + " failed to load!");
+                    LOGGER.trace(String.valueOf(e));
+                }
             } catch (IOException e) {
                 LOGGER.error(identifier + " failed to generate!");
-                LOGGER.trace(e);
-                broken = true;
+                LOGGER.trace(String.valueOf(e));
             }
         }
-
-        if (!broken) {
-            try {
-                loadConfig();
-            } catch (Exception e) {
-                LOGGER.error(identifier + " failed to load!");
-                LOGGER.trace(e);
-                broken = true;
-            }
-        }
-
     }
 
     /**
@@ -82,16 +72,13 @@ public class SimpleConfig {
     }
 
     private void createConfig() throws IOException {
-
         // try creating missing files
         request.file.getParentFile().mkdirs();
         Files.createFile(request.file.toPath());
-
         // write default config data
         PrintWriter writer = new PrintWriter(request.file, StandardCharsets.UTF_8);
         writer.write(request.getConfig());
         writer.close();
-
     }
 
     private void loadConfig() throws IOException {
@@ -105,63 +92,11 @@ public class SimpleConfig {
         if (!entry.isEmpty() && !entry.startsWith("#")) {
             String[] parts = entry.split("=", 2);
             if (parts.length == 2) {
-                config.put(parts[0], parts[1]);
+                config.put(parts[0], parts[1].split("#")[0]);
             } else {
                 throw new RuntimeException("Syntax error in config file on line " + line + "!");
             }
         }
-    }
-
-    /**
-     * Queries a value from config, returns `null` if the
-     * key does not exist.
-     *
-     * @return value corresponding to the given key
-     * @see SimpleConfig#getOrDefault
-     */
-    @Deprecated
-    public String get(String key) {
-        return config.get(key);
-    }
-
-    /**
-     * Returns string value from config corresponding to the given
-     * key, or the default string if the key is missing.
-     *
-     * @return value corresponding to the given key, or the default value
-     */
-    public String getOrDefault(String key, String def) {
-        String val = get(key);
-        return val == null ? def : val;
-    }
-
-    /**
-     * Returns integer value from config corresponding to the given
-     * key, or the default integer if the key is missing or invalid.
-     *
-     * @return value corresponding to the given key, or the default value
-     */
-    public int getOrDefault(String key, int def) {
-        try {
-            return Integer.parseInt(get(key));
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    /**
-     * Returns boolean value from config corresponding to the given
-     * key, or the default boolean if the key is missing.
-     *
-     * @return value corresponding to the given key, or the default value
-     */
-    public boolean getOrDefault(String key, boolean def) {
-        String val = get(key);
-        if (val != null) {
-            return val.equalsIgnoreCase("true");
-        }
-
-        return def;
     }
 
     /**
@@ -172,31 +107,10 @@ public class SimpleConfig {
      */
     public double getOrDefault(String key, double def) {
         try {
-            return Double.parseDouble(get(key));
+            return Double.parseDouble(config.get(key));
         } catch (Exception e) {
             return def;
         }
-    }
-
-    /**
-     * If any error occurred during loading or reading from the config
-     * a 'broken' flag is set, indicating that the config's state
-     * is undefined and should be discarded using `delete()`
-     *
-     * @return the 'broken' flag of the configuration
-     */
-    public boolean isBroken() {
-        return broken;
-    }
-
-    /**
-     * deletes the config file from the filesystem
-     *
-     * @return true if the operation was successful
-     */
-    public boolean delete() {
-        LOGGER.warn("Config '" + request.filename + "' was removed from existence! Restart the game to regenerate it.");
-        return request.file.delete();
     }
 
     public interface DefaultConfig {
@@ -245,7 +159,5 @@ public class SimpleConfig {
         private String getConfig() {
             return provider.get(filename) + "\n";
         }
-
     }
-
 }
