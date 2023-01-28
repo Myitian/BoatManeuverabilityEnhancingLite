@@ -2,6 +2,8 @@
 ![封面](https://iili.io/H0tYVDP.png)
 增强船在转向时的操控性（松开向左/向右后快速降低水平旋转速度），方便在冰面上行船。
 
+本模组是“船只操控性增强”的轻量版，不依赖 Fabric API 和 Cloth Config，仅需 Fabric 加载器。
+
 [轻量版模组](https://github.com/Myitian/BoatManeuverabilityEnhancingLite) 使用 SimpleConfig，不提供游戏内修改配置的功能。
 
 [全量版模组](https://github.com/Myitian/BoatManeuverabilityEnhancing) 使用 ClothConfig，提供游戏内修改配置的功能。

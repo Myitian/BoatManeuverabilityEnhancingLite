@@ -37,17 +37,34 @@ import java.util.Scanner;
 public class SimpleConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger("BoatManeuverabilityEnhancing/SimpleConfig");
     private final HashMap<String, String> config = new HashMap<>();
-    private final ConfigRequest request;
 
     private SimpleConfig(ConfigRequest request) {
-        this.request = request;
         String identifier = "Config '" + request.filename + "'";
         if (!request.file.exists()) {
             LOGGER.info(identifier + " is missing, generating default one...");
             try {
-                createConfig();
+                // create config
+                // try creating missing files
+                request.file.getParentFile().mkdirs();
+                Files.createFile(request.file.toPath());
+                // write default config data
+                PrintWriter writer = new PrintWriter(request.file, StandardCharsets.UTF_8);
+                writer.write(request.getConfig());
+                writer.close();
                 try {
-                    loadConfig();
+                    // load config
+                    Scanner reader = new Scanner(request.file);
+                    for (int line = 1; reader.hasNextLine(); line++) {
+                        String entry = reader.nextLine();
+                        if (!entry.isEmpty() && !entry.startsWith("#")) {
+                            String[] parts = entry.split("=", 2);
+                            if (parts.length == 2) {
+                                config.put(parts[0], parts[1].split("#")[0]);
+                            } else {
+                                throw new RuntimeException("Syntax error in config file on line " + line + "!");
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     LOGGER.error(identifier + " failed to load!");
                     LOGGER.trace(String.valueOf(e));
@@ -69,34 +86,6 @@ public class SimpleConfig {
     public static ConfigRequest of(String filename) {
         Path path = FabricLoader.getInstance().getConfigDir();
         return new ConfigRequest(path.resolve(filename + ".toml").toFile(), filename);
-    }
-
-    private void createConfig() throws IOException {
-        // try creating missing files
-        request.file.getParentFile().mkdirs();
-        Files.createFile(request.file.toPath());
-        // write default config data
-        PrintWriter writer = new PrintWriter(request.file, StandardCharsets.UTF_8);
-        writer.write(request.getConfig());
-        writer.close();
-    }
-
-    private void loadConfig() throws IOException {
-        Scanner reader = new Scanner(request.file);
-        for (int line = 1; reader.hasNextLine(); line++) {
-            parseConfigEntry(reader.nextLine(), line);
-        }
-    }
-
-    private void parseConfigEntry(String entry, int line) {
-        if (!entry.isEmpty() && !entry.startsWith("#")) {
-            String[] parts = entry.split("=", 2);
-            if (parts.length == 2) {
-                config.put(parts[0], parts[1].split("#")[0]);
-            } else {
-                throw new RuntimeException("Syntax error in config file on line " + line + "!");
-            }
-        }
     }
 
     /**
@@ -122,7 +111,6 @@ public class SimpleConfig {
     }
 
     public static class ConfigRequest {
-
         private final File file;
         private final String filename;
         private DefaultConfig provider;
