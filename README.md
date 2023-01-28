@@ -1,5 +1,6 @@
 # [BME-L] Boat Maneuverability Enhancing Lite 船只操控性增强轻量版
 ![封面](https://iili.io/H0tYVDP.png)
+
 增强船在转向时的操控性（松开向左/向右后快速降低水平旋转速度），方便在冰面上行船。
 
 本模组是“船只操控性增强”的轻量版，不依赖 Cloth Config，仅需 Fabric 加载器。
